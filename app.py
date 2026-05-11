@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 
@@ -25,7 +24,6 @@ try:
     if "REPETIDAS" in bd.columns:
         bd["REPETIDAS"] = pd.to_numeric(bd["REPETIDAS"], errors="coerce").fillna(0)
 
-    
     # MÉTRICAS GENERALES 
     total_coleccionadas = bd['ESTAMPAS'].sum()
     total_registros = len(bd)
@@ -69,13 +67,14 @@ try:
 
                 nombre_completo = f"{jugador_nombre} {jugador_apellido}".strip()
 
-                if tiene_estampa == 1:
+                if tiene_estampa >= 1:
                     st.success(f"✅ Ya tienes a {nombre_completo} de {jugador_pais}")
                 else:
                     st.warning(f"❌ Te falta conseguir a {nombre_completo} de {jugador_pais}")
             else:
                 st.error("⚠️ ID no existente en tu base de datos. Verifica!!")
-st.divider()
+    
+    st.divider()
 
     #INTERCAMBIOS
     st.header("🔄 Intercambios")
@@ -96,7 +95,7 @@ st.divider()
                 tabla_rep.index = tabla_rep.index + 1
                 
                 st.dataframe(tabla_rep, use_container_width=True, height=300, hide_index=True)
-                st.info(f"Tienes un total de {int(tabla_rep["REPETIDAS"].sum())} estampas para intercambiar")
+                st.info(f"Tienes un total de {int(tabla_rep['REPETIDAS'].sum())} estampas para intercambiar")
             else:
                 st.info("No tienes estampas repetidas registradas")
         else:
@@ -123,5 +122,6 @@ st.divider()
                 st.dataframe(tabla_faltantes, use_container_width=True, hide_index=True)
             else:
                 st.warning("😭 De esa lista no te sirve ninguna")
+
 except Exception as e:
     st.error(f"Error al conectar con la base de datos: {e}")
