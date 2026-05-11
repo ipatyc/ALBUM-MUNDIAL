@@ -20,6 +20,12 @@ try:
 
     bd = bd.fillna("")
 
+    #FILTRO ERRORES EN COLUMNAS
+    bd["ESTAMPAS"] = pd.to_numeric(bd["ESTAMPAS"], errors="coerce").fillna(0)
+    if "REPETIDAS" in bd.columns:
+        bd["REPETIDAS"] = pd.to_numeric(bd["REPETIDAS"], errors="coerce").fillna(0)
+
+    
     # MÉTRICAS GENERALES 
     total_coleccionadas = bd['ESTAMPAS'].sum()
     total_registros = len(bd)
@@ -40,9 +46,9 @@ try:
         xpais = bd.groupby("PAIS")["ESTAMPAS"].sum().reset_index()
         xpais["COMPLETADO%"] = (xpais["ESTAMPAS"] / 20) * 100
         xpais = xpais.sort_values(by="ESTAMPAS", ascending=False).reset_index(drop=True)
+        xpais.index = xpais.index + 1
 
-        # NUEVO: height=350 mantiene la tabla contenida en un cuadro pequeño
-        st.dataframe(xpais, use_container_width=True, height=350)
+        st.dataframe(xpais, use_container_width=True, height=350, hide_index=True)
 
     # Aparecerá en la mitad derecha
     with col_der:
@@ -69,6 +75,53 @@ try:
                     st.warning(f"❌ Te falta conseguir a {nombre_completo} de {jugador_pais}")
             else:
                 st.error("⚠️ ID no existente en tu base de datos. Verifica!!")
+st.divider()
 
+    #INTERCAMBIOS
+    st.header("🔄 Intercambios")
+    col_rep1, col_rep2 = st.columns(2)
+
+    with col_rep1:
+        st.subheader("📦 Repetidas")
+        st.write("Lista de tus estampas disponibles para cambiar:")
+        
+        # Verificamos que la columna REPETIDAS
+        if 'REPETIDAS' in bd.columns:
+            # Filtramos REPETIDAS sea mayor a 0
+            df_repetidas = bd[bd['REPETIDAS'] > 0]
+            
+            if not df_repetidas.empty:
+                # Seleccionamos las columnas
+                tabla_rep = df_repetidas[['ID', 'NOMBRE', 'APELLIDO', 'PAIS', 'REPETIDAS']].reset_index(drop=True)
+                tabla_rep.index = tabla_rep.index + 1
+                
+                st.dataframe(tabla_rep, use_container_width=True, height=300, hide_index=True)
+                st.info(f"Tienes un total de {int(tabla_rep["REPETIDAS"].sum())} estampas para intercambiar")
+            else:
+                st.info("No tienes estampas repetidas registradas")
+        else:
+            st.warning("No se encontró la columna REPETIDAS en tu Google Sheet")
+
+    with col_rep2:
+        st.subheader("🤝 Oportunidad de Intercambio")
+        st.write("Escribe los IDs de las repetidas para ver cuales te sirven:")
+        
+        # Espacio para escribir los IDs
+        lista_ids_amigos = st.text_area("Ejemplo: MEX-01, ARG-04, BRA-10", height=100)
+        
+        if lista_ids_amigos:
+            # Separamos por comas, quitamos espacios extra y convertimos a mayúsculas
+            ids_limpios = [x.strip().upper() for x in lista_ids_amigos.split(",") if x.strip()]
+            
+            # Buscamos en la base de datos: que el ID esté en la lista que pegaste Y que NO la tengas (ESTAMPAS == 0)
+            me_faltan = bd[(bd['ID'].isin(ids_limpios)) & (bd['ESTAMPAS'] == 0)]
+            
+            if not me_faltan.empty:
+                st.success(f"🎉 De esa lista, sirven {len(me_faltan)} estampas:")
+                tabla_faltantes = me_faltan[['ID', 'NOMBRE', 'APELLIDO', 'PAIS']].reset_index(drop=True)
+                tabla_faltantes.index = tabla_faltantes.index + 1
+                st.dataframe(tabla_faltantes, use_container_width=True, hide_index=True)
+            else:
+                st.warning("😭 De esa lista no te sirve ninguna")
 except Exception as e:
     st.error(f"Error al conectar con la base de datos: {e}")
