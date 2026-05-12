@@ -94,12 +94,23 @@ try:
                 tabla_rep = df_repetidas[['ID', 'NOMBRE', 'APELLIDO', 'PAIS', 'REPETIDAS']].reset_index(drop=True)
                 tabla_rep.index = tabla_rep.index + 1
                 
-                st.dataframe(tabla_rep, use_container_width=True, height=300, hide_index=True)
-                st.info(f"Tienes un total de {int(tabla_rep['REPETIDAS'].sum())} estampas para intercambiar")
+                # Usamos key="busc_rep" para que no interfiera con el otro buscador
+                buscar_rep = st.text_input("🔍 Buscar ID en repetidas (Ej: MEX o MEX-02):", key="busc_rep").upper().strip()
+                
+                if buscar_rep:
+                    # Filtramos la tabla usando str.contains para coincidencias exactas o parciales
+                    tabla_rep = tabla_rep[tabla_rep['ID'].str.contains(buscar_rep)]
+                
+                if not tabla_rep.empty:
+                    tabla_rep.index = tabla_rep.index + 1
+                    st.dataframe(tabla_rep, use_container_width=True, height=300, hide_index=True)
+                    st.info(f"Se muestran {int(tabla_rep['REPETIDAS'].sum())} estampas para intercambiar en esta lista.")
+                else:
+                    st.warning("No tienes repetidas que coincidan con esa búsqueda.")
             else:
-                st.info("No tienes estampas repetidas registradas")
+                st.info("No tienes estampas repetidas registradas.")
         else:
-            st.warning("No se encontró la columna REPETIDAS en tu Google Sheet")
+            st.warning("No se encontró la columna REPETIDAS en tu Google Sheet.")
 
     with col_rep2:
         st.subheader("🤝 Oportunidad de Intercambio")
