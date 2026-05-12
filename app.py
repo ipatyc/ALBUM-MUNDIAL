@@ -92,19 +92,24 @@ try:
             if not df_repetidas.empty:
                 # Seleccionamos las columnas
                 tabla_rep = df_repetidas[['ID', 'NOMBRE', 'APELLIDO', 'PAIS', 'REPETIDAS']].reset_index(drop=True)
-                tabla_rep.index = tabla_rep.index + 1
                 
                 # Usamos key="busc_rep" para que no interfiera con el otro buscador
-                buscar_rep = st.text_input("🔍 Buscar ID en repetidas (Ej: MEX o MEX-02):", key="busc_rep").upper().strip()
+                buscar_rep = st.text_input("🔍 Buscar ID en Repetidas (Ej: MEX o MEX-02):", key="busc_rep").upper().strip()
                 
                 if buscar_rep:
                     # Filtramos la tabla usando str.contains para coincidencias exactas o parciales
                     tabla_rep = tabla_rep[tabla_rep['ID'].str.contains(buscar_rep)]
                 
                 if not tabla_rep.empty:
+                    st.write("📋 Copia tu lista de repetidas:")
+                    lista_texto = (tabla_rep['ID'] + " [" + tabla_rep['REPETIDAS'].astype(int).astype(str) + "]").tolist()
+                    texto_final = ", ".join(lista_texto)
+                    
+                    # st.code crea un cuadro con un botón de copiar automático
+                    st.code(texto_final, language="text")
                     tabla_rep.index = tabla_rep.index + 1
                     st.dataframe(tabla_rep, use_container_width=True, height=300, hide_index=True)
-                    st.info(f"Se muestran {int(tabla_rep['REPETIDAS'].sum())} estampas para intercambiar en esta lista.")
+                    st.info(f"Se muestran {int(tabla_rep['REPETIDAS'].sum())} estampas para intercambiar en esta lista")
                 else:
                     st.warning("No tienes repetidas que coincidan con esa búsqueda.")
             else:
@@ -117,7 +122,7 @@ try:
         st.write("Escribe los IDs de las repetidas para ver cuales te sirven:")
         
         # Espacio para escribir los IDs
-        lista_ids_amigos = st.text_area("Ejemplo: MEX-01, ARG-04, BRA-10", height=100)
+        lista_ids_amigos = st.text_input("Ejemplo: MEX-01, ARG-04, BRA-10")
         
         if lista_ids_amigos:
             # Separamos por comas, quitamos espacios extra y convertimos a mayúsculas
