@@ -101,12 +101,10 @@ try:
                     tabla_rep = tabla_rep[tabla_rep['ID'].str.contains(buscar_rep)]
                 
                 if not tabla_rep.empty:
-                    st.write("📋 Copia tu lista de repetidas:")
                     lista_texto = (tabla_rep['ID'] + " [" + tabla_rep['REPETIDAS'].astype(int).astype(str) + "]").tolist()
                     texto_final = ", ".join(lista_texto)
-                    
-                    # st.code crea un cuadro con un botón de copiar automático
-                    st.code(texto_final, language="text")
+                    with st.expander("📋 Copiar tu lista de Repetidas"):
+                        st.code(texto_final, language="text")
                     tabla_rep.index = tabla_rep.index + 1
                     st.dataframe(tabla_rep, use_container_width=True, height=300, hide_index=True)
                     st.info(f"Se muestran {int(tabla_rep['REPETIDAS'].sum())} estampas para intercambiar en esta lista")
